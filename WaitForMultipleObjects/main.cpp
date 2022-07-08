@@ -47,7 +47,7 @@ void th_rcv(SOCKET ClientSock)
 
 		// Stop event.
 		if (dwEvent == WAIT_OBJECT_0) {
-			print_error("waitformultipleobjects");
+			print_error("StopEvent");
 			return;
 		}
 
@@ -58,7 +58,7 @@ void th_rcv(SOCKET ClientSock)
 
 		// Shouldn't hit.
 		else {
-			print_error("waitformultipleobjects");
+			print_error("No event");
 			continue;
 		}
 
@@ -89,6 +89,22 @@ void th_rcv(SOCKET ClientSock)
 }
 
 
+void thr_loop(void)
+{
+	DWORD dwEvent;
+	for (;;) {
+		dwEvent = WaitForSingleObject(hStopEvent, 0);
+
+		if (dwEvent == WAIT_OBJECT_0) {
+			return;
+		}
+
+		puts("YEEE YEE");
+		Sleep(1000);
+	}
+}
+
+
 int main()
 {
 	SOCKET ListenSocket = create_socket();
@@ -99,6 +115,7 @@ int main()
 
 
 	std::thread b = std::thread(th_rcv, ClientSock);
+	std::thread a = std::thread(thr_loop);
 
 	Sleep(10000);
 
@@ -106,5 +123,6 @@ int main()
 	SetEvent(hStopEvent);
 
 	b.join();
+	a.join();
 
 }
